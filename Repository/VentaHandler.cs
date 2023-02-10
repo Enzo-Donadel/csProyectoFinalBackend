@@ -61,5 +61,37 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return UsuarioHandler.GetUsuarioByID(idToSearch);
         }
+        public static void CrearVenta(long id, List<Producto> productos)
+        {
+            long idVenta = CrearVenta(id);
+            foreach (Producto item in productos)
+            {
+                int cantidadVendida = item.Stock;
+                ProductoVendido temp= new ProductoVendido(item.Id, item.Stock, idVenta);
+                int temporal = ProductoVendidoHandler.InsertProductoVendido(temp);
+                ProductoHandler.UpdateStockProducto(item.Id, cantidadVendida);
+            }
+        }
+        public static long CrearVenta(long idUsuario)
+        {
+            long idNuevaVenta;
+            string query = "INSERT INTO Venta " +
+                                "(Comentarios, IdUsuario) " +
+                            "VALUES " +
+                                "(@comentarioToADD, @IdUsuarioToADD); " +
+                            "SELECT @@IDENTITY";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@comentarioToADD", "");
+                    SqlDbQuery.Parameters.AddWithValue("@IdUsuarioToADD", idUsuario);
+                    SqlDbConnection.Open();
+                    idNuevaVenta = Convert.ToInt64(SqlDbQuery.ExecuteScalar());
+                    SqlDbConnection.Close();
+                }
+            }
+            return idNuevaVenta;
+        }
     }
 }
