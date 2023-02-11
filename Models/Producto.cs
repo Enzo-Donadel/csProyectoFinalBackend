@@ -30,7 +30,7 @@
         }
 
         public long Id { get => _id; set => _id = value; }
-        public string Descripcion { get => _descripcion; set => _descripcion = value; }
+        public string Descripciones { get => _descripcion; set => _descripcion = value; }
         public decimal Costo { get => _costo; set => _costo = value; }
         public decimal PrecioVenta { get => _precioVenta; set => _precioVenta = value; }
         public int Stock { get => _stock; set => _stock = value; }

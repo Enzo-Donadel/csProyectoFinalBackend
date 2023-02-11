@@ -25,5 +25,10 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
         {
             ProductoHandler.DeleteProduct(id);
         }
+        [HttpGet("{idUsuario}")]
+        public List<Producto> TraerProductos(long idUsuario)
+        {
+            return ProductoHandler.getProductsByUserId(idUsuario);
+        }
     }
 }
