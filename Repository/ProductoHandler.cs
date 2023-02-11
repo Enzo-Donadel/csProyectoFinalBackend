@@ -161,26 +161,5 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 }
             }
         }
-        public static void UpdateStockProducto(long idProducto, int StockVendido)
-        {
-            int AffectedRegisters;
-            Producto productSelled = ProductoHandler.getProductById(idProducto);
-            productSelled.Stock -= StockVendido;
-            string query = "UPDATE Producto " +
-                            "SET " +
-                                "Stock = @stockToChange " +
-                                "WHERE Id = @ProductId";
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
-            {
-                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
-                {
-                    SqlDbQuery.Parameters.AddWithValue("@stockToChange", productSelled.Stock);
-                    SqlDbQuery.Parameters.AddWithValue("@ProductId", productSelled.Id);
-                    SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
-                    SqlDbConnection.Close();
-                }
-            }
-        }
     }
 }
