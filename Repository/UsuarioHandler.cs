@@ -5,6 +5,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal static class UsuarioHandler
     {
+        #region Metodos para traer Usuarios
         //Traer Lista de Todos los usuarios
         public static List<Usuario> GetAllUsuario()
         {
@@ -70,6 +71,8 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return user;
         }
+        #endregion
+        #region Metodos Proyecto Final
         //Inicio de sesión (recibe un usuario y contraseña y devuelve un objeto Usuario)
         public static Usuario UserLogIn(string userLogged, string passLogged)
         {
@@ -153,5 +156,105 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 }
             }
         }
+        //Trae un Usuario mediante su NombreUsuario.
+        public static Usuario GetUsuarioByUserName(string userName)
+        {
+            Usuario user = new Usuario();
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                string query = "SELECT * FROM Usuario WHERE NombreUsuario=@parameterToSearch";
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@parameterToSearch", userName);
+                    SqlDbConnection.Open();
+                    using (SqlDataReader DataReader = SqlDbQuery.ExecuteReader())
+                    {
+                        if (DataReader.HasRows)
+                        {
+                            DataReader.Read();
+                            Usuario temp = new Usuario();
+                            user.Id = Convert.ToInt64(DataReader.GetInt64(0));
+                            user.Nombre = DataReader.GetString(1);
+                            user.Apellido = DataReader.GetString(2);
+                            user.NombreUsuario = DataReader.GetString(3);
+                            user.Contraseña = DataReader.GetString(4);
+                            user.Mail = DataReader.GetString(5);
+                        }
+                    }
+                    SqlDbConnection.Close();
+                }
+            }
+            return user;
+        }
+        //Crea un nuevo Usuario
+        public static bool InsertUsuario(Usuario userToAdd)
+        {
+            if (SearchUserNameAlredyExist(userToAdd.NombreUsuario))
+            {
+                return false;
+            }
+            int AffectedRegisters;
+            string query = "INSERT INTO Usuario " +
+                "(Nombre, Apellido, NombreUsuario, Contraseña, Mail) " +
+                "VALUES " +
+                "(@nameToChange, @lastNameToChange, @userNameToChange, @passwordToChange, @mailToChange)";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@nameToChange", userToAdd.Nombre);
+                    SqlDbQuery.Parameters.AddWithValue("@lastNameToChange", userToAdd.Apellido);
+                    SqlDbQuery.Parameters.AddWithValue("@userNameToChange", userToAdd.NombreUsuario);
+                    SqlDbQuery.Parameters.AddWithValue("@passwordToChange", userToAdd.Contraseña);
+                    SqlDbQuery.Parameters.AddWithValue("@mailToChange", userToAdd.Mail);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    SqlDbConnection.Close();
+                }
+            }
+            return true;
+        }
+        public static bool DeleteUser(long idToDelete)
+        {
+            //Previamente se deben borrar tanto los Productos como las Ventas realizadas por el usuario.
+            ProductoHandler.DeleteProductsByUser(idToDelete);
+            VentaHandler.DeleteVentasByUser(idToDelete);
+            bool result = false;
+            int AffectedRegisters;
+            string query = "Delete FROM Usuario " +
+                            "WHERE " +
+                                "Id = @idParameter";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@IdParameter", idToDelete);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    if(AffectedRegisters == 1)
+                    {
+                        result= true;
+                    }
+                    SqlDbConnection.Close();
+                }
+            }
+            return result;
+        }
+        #endregion
+        #region Metodos "Helper" para los metodos principales.
+        private static bool SearchUserNameAlredyExist(string usernameToSearch)
+        {
+            bool result = false;
+            List<Usuario> AllUsers = GetAllUsuario();
+            foreach (Usuario usuario in AllUsers)
+            {
+                if (usuario.NombreUsuario == usernameToSearch)
+                {
+                    result = true;
+                }
+            }
+            return result;
+        }
+        #endregion
     }
 }

@@ -126,7 +126,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             {
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
                 {
-                    SqlDbQuery.Parameters.AddWithValue("@IdParameter", idToDelete);
+                    SqlDbQuery.Parameters.AddWithValue("@idParameter", idToDelete);
                     SqlDbConnection.Open();
                     AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
                     SqlDbConnection.Close();
@@ -181,6 +181,36 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                     SqlDbConnection.Close();
                 }
             }
+        }
+        //Metodo Helper necesario para el funcionamiento de "BorrarUsuario", ya que previamente se deben borrar los productos cargados por ese Usuario.
+        internal static bool DeleteProductsByUser(long idUsuario)
+        {
+            bool result = false;
+            int AffectedRegisters;
+            //Previamente se deben eliminar todos los productos vendidos del producto en cuestion.
+            List<Producto> Productos = ProductoHandler.getProductByUserId(idUsuario);
+            foreach (Producto producto in Productos)
+            {
+                ProductoVendidoHandler.DeleteProductoVendidoByProductID(producto.Id);
+            }
+            string query = "Delete FROM Producto " +
+                            "WHERE " +
+                                "IdUsuario = @idParameter";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@idParameter", idUsuario);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    if (AffectedRegisters > 0)
+                    {
+                        result = true;
+                    }
+                    SqlDbConnection.Close();
+                }
+            }
+            return result;
         }
     }
 }
