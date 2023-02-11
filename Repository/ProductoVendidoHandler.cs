@@ -120,5 +120,28 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 }
             }
         }
+        public static int InsertProductoVendido(ProductoVendido productToAdd)
+        {
+            int result = 0;
+            int AffectedRegisters;
+            string query = "INSERT INTO ProductoVendido " +
+                                "(Stock,IdProducto, IdVenta) " +
+                            "VALUES " +
+                                "(@stockToADD,@idProductoToADD, @idVentaToADD); " +
+                            "SELECT @@IDENTITY";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@stockToADD", productToAdd.Stock);
+                    SqlDbQuery.Parameters.AddWithValue("@idProductoToADD", productToAdd.IdProducto);
+                    SqlDbQuery.Parameters.AddWithValue("@idVentaToADD", productToAdd.IdVenta);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    SqlDbConnection.Close();
+                }
+            }
+            return result;
+        }
     }
 }
