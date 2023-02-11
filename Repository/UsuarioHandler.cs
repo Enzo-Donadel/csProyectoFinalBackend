@@ -1,25 +1,15 @@
-﻿using System.Data.SqlClient;
-using System.Configuration;
-using SistemaGestionWebApi_EnzoDonadel.Models;
+﻿using SistemaGestionWebApi_EnzoDonadel.Models;
+using System.Data.SqlClient;
 
 namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal static class UsuarioHandler
     {
-        const string connectionString = "Data Source=DESKTOP-0CQ30RI\\SQLEXPRESS;Initial " +
-            "Catalog=SistemaGestion;" +
-            "Integrated Security=True;" +
-            "Connect Timeout=30;" +
-            "Encrypt=False;" +
-            "TrustServerCertificate=False;" +
-            "ApplicationIntent=ReadWrite;" +
-            "MultiSubnetFailover=False";
-
         //Traer Lista de Todos los usuarios
         public static List<Usuario> GetAllUsuario()
         {
             List<Usuario> userList = new List<Usuario>();
-            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
             {
                 using (SqlCommand SqlDbQuery = new SqlCommand("SELECT * FROM Usuario", SqlDbConnection))
                 {
@@ -51,7 +41,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
         public static Usuario GetUsuarioByID(long idToSearch)
         {
             Usuario user = new Usuario();
-            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
             {
                 string query = "SELECT * FROM Usuario WHERE Id=@parameterToSearch";
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
@@ -84,7 +74,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
         public static Usuario UserLogIn(string userLogged, string passLogged)
         {
             Usuario user = new Usuario();
-            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
             {
                 string query = "SELECT * FROM Usuario WHERE NombreUsuario = @userParameter AND Contraseña = @passParameter";
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
@@ -113,6 +103,55 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 }
             }
             return user;
+        }
+        //Update de Usuario. Si cualquier valor es "Null" o "vacio", en caso de strings, no lo modifica.
+        public static void UpdateUsuario(Usuario DataToUpdate)
+        {
+            int AffectedRegisters;
+            string query = "UPDATE Usuario " +
+                "SET " +
+                "Nombre = @nameToChange, " +
+                "Apellido = @lastNameToChange, " +
+                "NombreUsuario = @userNameToChange, " +
+                "Contraseña = @passwordToChange, " +
+                "Mail = @mailToChange " +
+                "WHERE Id = @userId";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    Usuario original = GetUsuarioByID(DataToUpdate.Id);
+                    if (DataToUpdate.Nombre != null)
+                    {
+                        SqlDbQuery.Parameters.AddWithValue("@nameToChange", DataToUpdate.Nombre);
+                    }
+                    else SqlDbQuery.Parameters.AddWithValue("nametoChange", original.Nombre);
+                    if (DataToUpdate.Apellido != null)
+                    {
+                        SqlDbQuery.Parameters.AddWithValue("@lastNameToChange", DataToUpdate.Apellido);
+                    }
+                    else SqlDbQuery.Parameters.AddWithValue("@lastNameToChange", original.Apellido);
+                    if (DataToUpdate.NombreUsuario != null)
+                    {
+                        SqlDbQuery.Parameters.AddWithValue("@userNameToChange", DataToUpdate.NombreUsuario);
+                    }
+                    else SqlDbQuery.Parameters.AddWithValue("@userNameToChange", original.NombreUsuario);
+                    if (DataToUpdate.Contraseña != null)
+                    {
+                        SqlDbQuery.Parameters.AddWithValue("@passwordToChange", DataToUpdate.Contraseña);
+                    }
+                    else SqlDbQuery.Parameters.AddWithValue("@passwordToChange", original.Contraseña);
+                    if (DataToUpdate.Contraseña != null)
+                    {
+                        SqlDbQuery.Parameters.AddWithValue("@mailToChange", DataToUpdate.Mail);
+                    }
+                    else SqlDbQuery.Parameters.AddWithValue("@mailToChange", original.Mail);
+                    SqlDbQuery.Parameters.AddWithValue("@userId", DataToUpdate.Id);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    SqlDbConnection.Close();
+                }
+            }
         }
     }
 }
