@@ -114,52 +114,5 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 }
             }
         }
-        public static void DeleteProduct(long idToDelete)
-        {
-            int AffectedRegisters;
-            //Previamente se deben eliminar todos los productos vendidos del producto en cuestion.
-
-            string query = "Delete FROM Producto " +
-                            "WHERE " +
-                                "Id = @idParameter";
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
-            {
-                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
-                {
-                    SqlDbQuery.Parameters.AddWithValue("@IdParameter", idToDelete);
-                    SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
-                    SqlDbConnection.Close();
-                }
-            }
-        }
-        public static void UpdateProducto(Producto DataToUpdate)
-        {
-            int AffectedRegisters;
-            string query = "UPDATE Producto " +
-                            "SET " +
-                                "Descripciones = @descriptionToChange, " +
-                                "Costo = @costoToChange, " +
-                                "PrecioVenta = @precioVentaToChange, " +
-                                "Stock = @stockToChange, " +
-                                "IdUsuario = @idUsuarioToChange " +
-                                "WHERE Id = @ProductId";
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
-            {
-                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
-                {
-                    Producto original = getProductById(DataToUpdate.Id);
-                    SqlDbQuery.Parameters.AddWithValue("@descriptionToChange", DataToUpdate.Descripcion);
-                    SqlDbQuery.Parameters.AddWithValue("@costoToChange", DataToUpdate.Costo);
-                    SqlDbQuery.Parameters.AddWithValue("@precioVentaToChange", DataToUpdate.PrecioVenta);
-                    SqlDbQuery.Parameters.AddWithValue("@stockToChange", DataToUpdate.Stock);
-                    SqlDbQuery.Parameters.AddWithValue("@idUsuarioToChange", DataToUpdate.IdUsuario);
-                    SqlDbQuery.Parameters.AddWithValue("@ProductId", DataToUpdate.Id);
-                    SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
-                    SqlDbConnection.Close();
-                }
-            }
-        }
     }
 }
