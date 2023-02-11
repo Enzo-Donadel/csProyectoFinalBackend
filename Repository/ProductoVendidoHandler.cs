@@ -101,11 +101,10 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return result;
         }
-        public static void DeleteProductoVendido(long idToDelete)
+        internal static void DeleteProductoVendidoByProductID(long idToDelete)
         {
             int AffectedRegisters;
-            //Previamente se deben eliminar todos los productos vendidos del producto en cuestion.
-
+            //Metodo Helper necesario para el funcionamiento de "BorrarProductoByUser", ya que previamente se deben borrar los productosVendidos de dicho producto.
             string query = "Delete FROM ProductoVendido " +
                             "WHERE " +
                                 "IdProducto = @idParameter";
@@ -113,14 +112,14 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             {
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
                 {
-                    SqlDbQuery.Parameters.AddWithValue("@IdParameter", idToDelete);
+                    SqlDbQuery.Parameters.AddWithValue("@idParameter", idToDelete);
                     SqlDbConnection.Open();
                     AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
                     SqlDbConnection.Close();
                 }
             }
         }
-        public static int InsertProductoVendido(ProductoVendido productToAdd)
+        internal static int InsertProductoVendido(ProductoVendido productToAdd)
         {
             int result = 0;
             int AffectedRegisters;
@@ -142,6 +141,24 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 }
             }
             return result;
+        }
+        //Metodo Helper necesario para el funcionamiento de "BorrarVentaByUser", ya que previamente se deben borrar los productosVendidos en dicha venta.
+        internal static void DeleteProductoVendidoByVentaId(long idToDelete)
+        {
+            int AffectedRegisters;
+            string query = "Delete FROM ProductoVendido " +
+                            "WHERE " +
+                                "IdVenta = @idParameter";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@idParameter", idToDelete);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    SqlDbConnection.Close();
+                }
+            }
         }
     }
 }
