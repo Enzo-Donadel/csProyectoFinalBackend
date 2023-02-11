@@ -1,15 +1,25 @@
-﻿using SistemaGestionWebApi_EnzoDonadel.Models;
-using System.Data.SqlClient;
+﻿using System.Data.SqlClient;
+using System.Configuration;
+using SistemaGestionWebApi_EnzoDonadel.Models;
 
 namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal class ProductoVendidoHandler
     {
+        const string connectionString = "Data Source=DESKTOP-0CQ30RI\\SQLEXPRESS;Initial " +
+            "Catalog=SistemaGestion;" +
+            "Integrated Security=True;" +
+            "Connect Timeout=30;" +
+            "Encrypt=False;" +
+            "TrustServerCertificate=False;" +
+            "ApplicationIntent=ReadWrite;" +
+            "MultiSubnetFailover=False";
+
         //Traer ProductosVendidos (recibe el id del usuario y devuelve una lista de productos vendidos por ese usuario)
         private static List<ProductoVendido> getTablaProductoVendido(long sellIdToSearch)
         {
             List<ProductoVendido> productosDeVentaX = new List<ProductoVendido>();
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
             {
                 string query = "SELECT * FROM ProductoVendido WHERE IdVenta =@parameterToSearch";
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
@@ -43,7 +53,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             List<Producto> ProductosEnVenta = new List<Producto>();
             List<long> IdProductosEnVenta = new List<long>();
             long temp = 0;
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
             {
                 string query = "SELECT ProductoVendido.IdProducto FROM ProductoVendido WHERE IdVenta =@parameterToSearch";
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
@@ -76,7 +86,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
         public static int getCantidadDeProductosVendidos(long idVenta, long idProducto)
         {
             int result = 0;
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
             {
                 string query = "SELECT ProductoVendido.Stock FROM ProductoVendido WHERE IdVenta = @parameter1ToSearch AND IdProducto = @parameter2ToSearch";
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))

@@ -1,15 +1,24 @@
-﻿using SistemaGestionWebApi_EnzoDonadel.Models;
-using System.Data.SqlClient;
+﻿using System.Data.SqlClient;
+using SistemaGestionWebApi_EnzoDonadel.Models;
 
 namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal class ProductoHandler
     {
+        const string connectionString = "Data Source=DESKTOP-0CQ30RI\\SQLEXPRESS;Initial " +
+            "Catalog=SistemaGestion;" +
+            "Integrated Security=True;" +
+            "Connect Timeout=30;" +
+            "Encrypt=False;" +
+            "TrustServerCertificate=False;" +
+            "ApplicationIntent=ReadWrite;" +
+            "MultiSubnetFailover=False";
+
         //Traer Productos (recibe un id de usuario y, devuelve una lista con todos los productos cargado por ese usuario)
         public static List<Producto> getProductByUserId(long userIdToSearch)
         {
             List<Producto> products = new List<Producto>();
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
             {
                 using (SqlCommand SqlDbQuery = new SqlCommand("SELECT * FROM Producto WHERE IdUsuario =@parameterToSearch", SqlDbConnection))
                 {
@@ -42,7 +51,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
         public static Producto getProductById(long IdToSearch)
         {
             Producto product = new Producto();
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
             {
                 using (SqlCommand SqlDbQuery = new SqlCommand("SELECT * FROM Producto WHERE Id =@parameterToSearch", SqlDbConnection))
                 {
