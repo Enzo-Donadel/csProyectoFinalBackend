@@ -91,28 +91,5 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return products;
         }
-        public static void AddProducto(Producto productToAdd)
-        {
-            int AffectedRegisters;
-            string query = "INSERT INTO Producto " +
-                "(Descripciones, Costo, PrecioVenta, Stock, IdUsuario) " +
-                "VALUES " +
-                "(@DescriptionToADD, @CostoToADD, @PrecioVentaToADD, @StockToADD, @IdUsuarioToADD)";
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
-            {
-                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
-                {
-                    Producto original = getProductById(productToAdd.Id);
-                    SqlDbQuery.Parameters.AddWithValue("@DescriptionToADD", productToAdd.Descripcion);
-                    SqlDbQuery.Parameters.AddWithValue("@CostoToADD", productToAdd.Costo);
-                    SqlDbQuery.Parameters.AddWithValue("@PrecioVentaToADD", productToAdd.PrecioVenta);
-                    SqlDbQuery.Parameters.AddWithValue("@StockToADD", productToAdd.Stock);
-                    SqlDbQuery.Parameters.AddWithValue("@IdUsuarioToADD", productToAdd.IdUsuario);
-                    SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
-                    SqlDbConnection.Close();
-                }
-            }
-        }
     }
 }
