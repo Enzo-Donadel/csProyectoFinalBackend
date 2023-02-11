@@ -15,15 +15,5 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
         {
             ProductoHandler.AddProducto(DataToAdd);
         }
-        [HttpPut]
-        public void ModificarProducto(Producto DataToUpdate)
-        {
-            ProductoHandler.UpdateProducto(DataToUpdate);
-        }
-        [HttpDelete("{id}")]
-        public void BorrarProducto(long id)
-        {
-            ProductoHandler.DeleteProduct(id);
-        }
     }
 }

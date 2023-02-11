@@ -101,24 +101,5 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return result;
         }
-        public static void DeleteProductoVendido(long idToDelete)
-        {
-            int AffectedRegisters;
-            //Previamente se deben eliminar todos los productos vendidos del producto en cuestion.
-
-            string query = "Delete FROM ProductoVendido " +
-                            "WHERE " +
-                                "IdProducto = @idParameter";
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
-            {
-                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
-                {
-                    SqlDbQuery.Parameters.AddWithValue("@IdParameter", idToDelete);
-                    SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
-                    SqlDbConnection.Close();
-                }
-            }
-        }
     }
 }
