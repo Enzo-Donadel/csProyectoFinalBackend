@@ -1,15 +1,25 @@
-﻿using SistemaGestionWebApi_EnzoDonadel.Models;
-using System.Data.SqlClient;
+﻿using System.Data.SqlClient;
+using System.Configuration;
+using SistemaGestionWebApi_EnzoDonadel.Models;
 
 namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal class VentaHandler
     {
+        const string connectionString = "Data Source=DESKTOP-0CQ30RI\\SQLEXPRESS;Initial " +
+           "Catalog=SistemaGestion;" +
+          "Integrated Security=True;" +
+          "Connect Timeout=30;" +
+          "Encrypt=False;" +
+          "TrustServerCertificate=False;" +
+          "ApplicationIntent=ReadWrite;" +
+          "MultiSubnetFailover=False";
+
         //Traer Ventas (recibe el id del usuario y devuelve un a lista de Ventas realizadas por ese usuario)
         public static List<Venta> GetVentaByUserId(long userIdToSearch)
         {
             List<Venta> ventas = new List<Venta>();
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
             {
                 using (SqlCommand SqlDbQuery = new SqlCommand("SELECT * FROM Venta WHERE IdUsuario =@parameterToSearch", SqlDbConnection))
                 {
@@ -39,7 +49,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
         public static Usuario GetUsuarioByVenta(long VentaId)
         {
             long idToSearch = 0;
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
             {
                 string query = "SELECT Venta.IdUsuario FROM Venta WHERE Id = @parameterToSearch";
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
