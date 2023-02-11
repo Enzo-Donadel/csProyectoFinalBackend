@@ -14,6 +14,12 @@
             this._stock = 0;
             this._idVenta = 0;
         }
+        public ProductoVendido(long idProducto, int stock, long idVenta)
+        {
+            this._idProducto = idProducto;
+            this._stock = stock;
+            this._idVenta = idVenta;
+        }
 
         public ProductoVendido(long id, long idProducto, int stock, long idVenta)
         {

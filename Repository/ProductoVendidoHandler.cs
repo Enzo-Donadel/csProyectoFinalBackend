@@ -1,25 +1,15 @@
-﻿using System.Data.SqlClient;
-using System.Configuration;
-using SistemaGestionWebApi_EnzoDonadel.Models;
+﻿using SistemaGestionWebApi_EnzoDonadel.Models;
+using System.Data.SqlClient;
 
 namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal class ProductoVendidoHandler
     {
-        const string connectionString = "Data Source=DESKTOP-0CQ30RI\\SQLEXPRESS;Initial " +
-            "Catalog=SistemaGestion;" +
-            "Integrated Security=True;" +
-            "Connect Timeout=30;" +
-            "Encrypt=False;" +
-            "TrustServerCertificate=False;" +
-            "ApplicationIntent=ReadWrite;" +
-            "MultiSubnetFailover=False";
-
         //Traer ProductosVendidos (recibe el id del usuario y devuelve una lista de productos vendidos por ese usuario)
         private static List<ProductoVendido> getTablaProductoVendido(long sellIdToSearch)
         {
             List<ProductoVendido> productosDeVentaX = new List<ProductoVendido>();
-            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
             {
                 string query = "SELECT * FROM ProductoVendido WHERE IdVenta =@parameterToSearch";
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
@@ -53,7 +43,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             List<Producto> ProductosEnVenta = new List<Producto>();
             List<long> IdProductosEnVenta = new List<long>();
             long temp = 0;
-            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
             {
                 string query = "SELECT ProductoVendido.IdProducto FROM ProductoVendido WHERE IdVenta =@parameterToSearch";
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
@@ -86,7 +76,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
         public static int getCantidadDeProductosVendidos(long idVenta, long idProducto)
         {
             int result = 0;
-            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
             {
                 string query = "SELECT ProductoVendido.Stock FROM ProductoVendido WHERE IdVenta = @parameter1ToSearch AND IdProducto = @parameter2ToSearch";
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
@@ -106,6 +96,48 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                             result += DataReader.GetInt32(0);
                         }
                     }
+                    SqlDbConnection.Close();
+                }
+            }
+            return result;
+        }
+        public static void DeleteProductoVendido(long idToDelete)
+        {
+            int AffectedRegisters;
+            //Previamente se deben eliminar todos los productos vendidos del producto en cuestion.
+
+            string query = "Delete FROM ProductoVendido " +
+                            "WHERE " +
+                                "IdProducto = @idParameter";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@IdParameter", idToDelete);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    SqlDbConnection.Close();
+                }
+            }
+        }
+        public static int InsertProductoVendido(ProductoVendido productToAdd)
+        {
+            int result = 0;
+            int AffectedRegisters;
+            string query = "INSERT INTO ProductoVendido " +
+                                "(Stock,IdProducto, IdVenta) " +
+                            "VALUES " +
+                                "(@stockToADD,@idProductoToADD, @idVentaToADD); " +
+                            "SELECT @@IDENTITY";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@stockToADD", productToAdd.Stock);
+                    SqlDbQuery.Parameters.AddWithValue("@idProductoToADD", productToAdd.IdProducto);
+                    SqlDbQuery.Parameters.AddWithValue("@idVentaToADD", productToAdd.IdVenta);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
                     SqlDbConnection.Close();
                 }
             }

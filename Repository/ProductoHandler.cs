@@ -1,24 +1,15 @@
-﻿using System.Data.SqlClient;
-using SistemaGestionWebApi_EnzoDonadel.Models;
+﻿using SistemaGestionWebApi_EnzoDonadel.Models;
+using System.Data.SqlClient;
 
 namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal class ProductoHandler
     {
-        const string connectionString = "Data Source=DESKTOP-0CQ30RI\\SQLEXPRESS;Initial " +
-            "Catalog=SistemaGestion;" +
-            "Integrated Security=True;" +
-            "Connect Timeout=30;" +
-            "Encrypt=False;" +
-            "TrustServerCertificate=False;" +
-            "ApplicationIntent=ReadWrite;" +
-            "MultiSubnetFailover=False";
-
         //Traer Productos (recibe un id de usuario y, devuelve una lista con todos los productos cargado por ese usuario)
         public static List<Producto> getProductByUserId(long userIdToSearch)
         {
             List<Producto> products = new List<Producto>();
-            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
             {
                 using (SqlCommand SqlDbQuery = new SqlCommand("SELECT * FROM Producto WHERE IdUsuario =@parameterToSearch", SqlDbConnection))
                 {
@@ -51,7 +42,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
         public static Producto getProductById(long IdToSearch)
         {
             Producto product = new Producto();
-            using (SqlConnection SqlDbConnection = new SqlConnection(connectionString))
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
             {
                 using (SqlCommand SqlDbQuery = new SqlCommand("SELECT * FROM Producto WHERE Id =@parameterToSearch", SqlDbConnection))
                 {
@@ -99,6 +90,97 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 }
             }
             return products;
+        }
+        public static void AddProducto(Producto productToAdd)
+        {
+            int AffectedRegisters;
+            string query = "INSERT INTO Producto " +
+                "(Descripciones, Costo, PrecioVenta, Stock, IdUsuario) " +
+                "VALUES " +
+                "(@DescriptionToADD, @CostoToADD, @PrecioVentaToADD, @StockToADD, @IdUsuarioToADD)";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    Producto original = getProductById(productToAdd.Id);
+                    SqlDbQuery.Parameters.AddWithValue("@DescriptionToADD", productToAdd.Descripcion);
+                    SqlDbQuery.Parameters.AddWithValue("@CostoToADD", productToAdd.Costo);
+                    SqlDbQuery.Parameters.AddWithValue("@PrecioVentaToADD", productToAdd.PrecioVenta);
+                    SqlDbQuery.Parameters.AddWithValue("@StockToADD", productToAdd.Stock);
+                    SqlDbQuery.Parameters.AddWithValue("@IdUsuarioToADD", productToAdd.IdUsuario);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    SqlDbConnection.Close();
+                }
+            }
+        }
+        public static void DeleteProduct(long idToDelete)
+        {
+            int AffectedRegisters;
+            //Previamente se deben eliminar todos los productos vendidos del producto en cuestion.
+
+            string query = "Delete FROM Producto " +
+                            "WHERE " +
+                                "Id = @idParameter";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@IdParameter", idToDelete);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    SqlDbConnection.Close();
+                }
+            }
+        }
+        public static void UpdateProducto(Producto DataToUpdate)
+        {
+            int AffectedRegisters;
+            string query = "UPDATE Producto " +
+                            "SET " +
+                                "Descripciones = @descriptionToChange, " +
+                                "Costo = @costoToChange, " +
+                                "PrecioVenta = @precioVentaToChange, " +
+                                "Stock = @stockToChange, " +
+                                "IdUsuario = @idUsuarioToChange " +
+                                "WHERE Id = @ProductId";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    Producto original = getProductById(DataToUpdate.Id);
+                    SqlDbQuery.Parameters.AddWithValue("@descriptionToChange", DataToUpdate.Descripcion);
+                    SqlDbQuery.Parameters.AddWithValue("@costoToChange", DataToUpdate.Costo);
+                    SqlDbQuery.Parameters.AddWithValue("@precioVentaToChange", DataToUpdate.PrecioVenta);
+                    SqlDbQuery.Parameters.AddWithValue("@stockToChange", DataToUpdate.Stock);
+                    SqlDbQuery.Parameters.AddWithValue("@idUsuarioToChange", DataToUpdate.IdUsuario);
+                    SqlDbQuery.Parameters.AddWithValue("@ProductId", DataToUpdate.Id);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    SqlDbConnection.Close();
+                }
+            }
+        }
+        public static void UpdateStockProducto(long idProducto, int StockVendido)
+        {
+            int AffectedRegisters;
+            Producto productSelled = ProductoHandler.getProductById(idProducto);
+            productSelled.Stock -= StockVendido;
+            string query = "UPDATE Producto " +
+                            "SET " +
+                                "Stock = @stockToChange " +
+                                "WHERE Id = @ProductId";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@stockToChange", productSelled.Stock);
+                    SqlDbQuery.Parameters.AddWithValue("@ProductId", productSelled.Id);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    SqlDbConnection.Close();
+                }
+            }
         }
     }
 }

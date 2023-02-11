@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SistemaGestionWebApi_EnzoDonadel.Models;
 using SistemaGestionWebApi_EnzoDonadel.Repository;
 
@@ -9,11 +8,19 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
     [ApiController]
     public class UsuarioController : ControllerBase
     {
+        //LogIn de Usuario.
         [HttpGet("{userName}/{password}")]
-        public Usuario Login(string userName, string password)
+        public Usuario LogIn(string userName, string password)
         {
             Usuario user = UsuarioHandler.UserLogIn(userName, password);
             return user;
+        }
+
+        //Modifica Datos de Usuario
+        [HttpPut]
+        public void ModificarUsuario(Usuario DataToModify)
+        {
+            UsuarioHandler.UpdateUsuario(DataToModify);
         }
     }
 }
