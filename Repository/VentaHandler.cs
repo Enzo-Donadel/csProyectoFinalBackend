@@ -5,7 +5,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal class VentaHandler
     {
-        //Traer Ventas (recibe el id del usuario y devuelve un a lista de Ventas realizadas por ese usuario)
+        #region Metodos ProyectoFinal
         public static List<Venta> GetVentaByUserId(long userIdToSearch)
         {
             List<Venta> ventas = new List<Venta>();
@@ -36,31 +36,6 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return ventas;
         }
-        public static Usuario GetUsuarioByVenta(long VentaId)
-        {
-            long idToSearch = 0;
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
-            {
-                string query = "SELECT Venta.IdUsuario FROM Venta WHERE Id = @parameterToSearch";
-                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
-                {
-                    SqlParameter ParameterID = new SqlParameter("parameterToSearch", System.Data.SqlDbType.BigInt);
-                    ParameterID.Value = VentaId;
-                    SqlDbQuery.Parameters.Add(ParameterID);
-                    SqlDbConnection.Open();
-                    using (SqlDataReader DataReader = SqlDbQuery.ExecuteReader())
-                    {
-                        if (DataReader.HasRows)
-                        {
-                            DataReader.Read();
-                            idToSearch = DataReader.GetInt64(0);
-                        }
-                    }
-                    SqlDbConnection.Close();
-                }
-            }
-            return UsuarioHandler.GetUsuarioByID(idToSearch);
-        }
         public static void CrearVenta(long id, List<Producto> productos)
         {
             long idVenta = CrearVenta(id);
@@ -72,7 +47,9 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 ProductoHandler.UpdateStockProducto(item.Id, cantidadVendida);
             }
         }
-        public static long CrearVenta(long idUsuario)
+        #endregion
+        #region Metodos Helper internos
+        internal static long CrearVenta(long idUsuario)
         {
             long idNuevaVenta;
             string query = "INSERT INTO Venta " +
@@ -123,5 +100,6 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return result;
         }
+        #endregion
     }
 }
