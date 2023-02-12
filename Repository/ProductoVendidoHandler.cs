@@ -5,39 +5,6 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal class ProductoVendidoHandler
     {
-        //Traer ProductosVendidos (recibe el id del usuario y devuelve una lista de productos vendidos por ese usuario)
-        private static List<ProductoVendido> getTablaProductoVendido(long sellIdToSearch)
-        {
-            List<ProductoVendido> productosDeVentaX = new List<ProductoVendido>();
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
-            {
-                string query = "SELECT * FROM ProductoVendido WHERE IdVenta =@parameterToSearch";
-                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
-                {
-                    SqlParameter ParameterID = new SqlParameter("parameterToSearch", System.Data.SqlDbType.BigInt);
-                    ParameterID.Value = sellIdToSearch;
-                    SqlDbQuery.Parameters.Add(ParameterID);
-                    SqlDbConnection.Open();
-                    using (SqlDataReader DataReader = SqlDbQuery.ExecuteReader())
-                    {
-                        if (DataReader.HasRows)
-                        {
-                            while (DataReader.Read())
-                            {
-                                ProductoVendido temp = new ProductoVendido();
-                                temp.Id = DataReader.GetInt64(0);
-                                temp.Stock = Convert.ToInt32(DataReader.GetInt32(1));
-                                temp.IdProducto = DataReader.GetInt64(2);
-                                temp.IdVenta = DataReader.GetInt64(3);
-                                productosDeVentaX.Add(temp);
-                            }
-                        }
-                    }
-                    SqlDbConnection.Close();
-                }
-            }
-            return productosDeVentaX;
-        }
         public static List<Producto> getProductosInVenta(long idVenta)
         {
             List<Producto> ProductosEnVenta = new List<Producto>();
@@ -101,6 +68,52 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return result;
         }
+        #region Metodos Proyecto Final
+        public static List<ProductoVendido> GetProductoVendidoByUserName(long idUsuario)
+        {
+            List<ProductoVendido> productoVendidos = new List<ProductoVendido>();
+            List<Venta> VentasDeUsuario = VentaHandler.GetVentaByUserId(idUsuario);
+            foreach(Venta venta in VentasDeUsuario)
+            {
+                List<ProductoVendido> temp = ProductoVendidoHandler.getProductoVendidoByVenta(venta.Id);
+                productoVendidos.AddRange(temp);
+            }
+            return productoVendidos;
+        }
+        #endregion
+        #region Metodos Helper internos
+        internal static List<ProductoVendido> getProductoVendidoByVenta(long sellIdToSearch)
+        {
+            List<ProductoVendido> productosDeVentaX = new List<ProductoVendido>();
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                string query = "SELECT * FROM ProductoVendido WHERE IdVenta =@parameterToSearch";
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlParameter ParameterID = new SqlParameter("parameterToSearch", System.Data.SqlDbType.BigInt);
+                    ParameterID.Value = sellIdToSearch;
+                    SqlDbQuery.Parameters.Add(ParameterID);
+                    SqlDbConnection.Open();
+                    using (SqlDataReader DataReader = SqlDbQuery.ExecuteReader())
+                    {
+                        if (DataReader.HasRows)
+                        {
+                            while (DataReader.Read())
+                            {
+                                ProductoVendido temp = new ProductoVendido();
+                                temp.Id = DataReader.GetInt64(0);
+                                temp.Stock = Convert.ToInt32(DataReader.GetInt32(1));
+                                temp.IdProducto = DataReader.GetInt64(2);
+                                temp.IdVenta = DataReader.GetInt64(3);
+                                productosDeVentaX.Add(temp);
+                            }
+                        }
+                    }
+                    SqlDbConnection.Close();
+                }
+            }
+            return productosDeVentaX;
+        }
         internal static void DeleteProductoVendidoByProductID(long idToDelete)
         {
             int AffectedRegisters;
@@ -160,5 +173,6 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 }
             }
         }
+        #endregion
     }
 }
