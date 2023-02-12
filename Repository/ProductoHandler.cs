@@ -5,40 +5,6 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal class ProductoHandler
     {
-        //Traer Productos (recibe un id de usuario y, devuelve una lista con todos los productos cargado por ese usuario)
-        public static List<Producto> getProductByUserId(long userIdToSearch)
-        {
-            List<Producto> products = new List<Producto>();
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
-            {
-                using (SqlCommand SqlDbQuery = new SqlCommand("SELECT * FROM Producto WHERE IdUsuario =@parameterToSearch", SqlDbConnection))
-                {
-                    SqlParameter ParameterID = new SqlParameter("parameterToSearch", System.Data.SqlDbType.BigInt);
-                    ParameterID.Value = userIdToSearch;
-                    SqlDbQuery.Parameters.Add(ParameterID);
-                    SqlDbConnection.Open();
-                    using (SqlDataReader DataReader = SqlDbQuery.ExecuteReader())
-                    {
-                        if (DataReader.HasRows)
-                        {
-                            while (DataReader.Read())
-                            {
-                                Producto temp = new Producto();
-                                temp.Id = DataReader.GetInt64(0);
-                                temp.Descripcion = DataReader.GetString(1);
-                                temp.Costo = DataReader.GetDecimal(2);
-                                temp.PrecioVenta = DataReader.GetDecimal(3);
-                                temp.Stock = DataReader.GetInt32(4);
-                                temp.IdUsuario = DataReader.GetInt64(5);
-                                products.Add(temp);
-                            }
-                        }
-                    }
-                    SqlDbConnection.Close();
-                }
-            }
-            return products;
-        }
         public static Producto getProductById(long IdToSearch)
         {
             Producto product = new Producto();
@@ -56,7 +22,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                         {
                             DataReader.Read();
                             product.Id = DataReader.GetInt64(0);
-                            product.Descripcion = DataReader.GetString(1);
+                            product.Descripciones = DataReader.GetString(1);
                             product.Costo = DataReader.GetDecimal(2);
                             product.PrecioVenta = DataReader.GetDecimal(3);
                             product.Stock = DataReader.GetInt32(4);
@@ -91,19 +57,52 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return products;
         }
-        public static void AddProducto(Producto productToAdd)
+        #region Metodos Proyecto Final
+        //Traer Productos (recibe un id de usuario y, devuelve una lista con todos los productos cargado por ese usuario)
+        public static List<Producto> getProductsByUserId(long userIdToSearch)
         {
-            int AffectedRegisters;
-            string query = "INSERT INTO Producto " +
-                "(Descripciones, Costo, PrecioVenta, Stock, IdUsuario) " +
-                "VALUES " +
-                "(@DescriptionToADD, @CostoToADD, @PrecioVentaToADD, @StockToADD, @IdUsuarioToADD)";
+            List<Producto> products = new List<Producto>();
+            string query = "SELECT * FROM Producto WHERE IdUsuario =@parameterToSearch";
             using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
             {
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
                 {
-                    Producto original = getProductById(productToAdd.Id);
-                    SqlDbQuery.Parameters.AddWithValue("@DescriptionToADD", productToAdd.Descripcion);
+                    SqlDbQuery.Parameters.AddWithValue("@parameterToSearch", userIdToSearch);
+                    SqlDbConnection.Open();
+                    using (SqlDataReader DataReader = SqlDbQuery.ExecuteReader())
+                    {
+                        if (DataReader.HasRows)
+                        {
+                            while (DataReader.Read())
+                            {
+                                Producto temp = new Producto();
+                                temp.Id = DataReader.GetInt64(0);
+                                temp.Descripciones = DataReader.GetString(1);
+                                temp.Costo = DataReader.GetDecimal(2);
+                                temp.PrecioVenta = DataReader.GetDecimal(3);
+                                temp.Stock = DataReader.GetInt32(4);
+                                temp.IdUsuario = DataReader.GetInt64(5);
+                                products.Add(temp);
+                            }
+                        }
+                    }
+                    SqlDbConnection.Close();
+                }
+            }
+            return products;
+        }
+        public static void AddProducto(Producto productToAdd)
+        {
+            int AffectedRegisters;
+            string query = "INSERT INTO Producto " +
+                                "(Descripciones, Costo, PrecioVenta, Stock, IdUsuario) " +
+                            "VALUES " +
+                                "(@DescriptionToADD, @CostoToADD, @PrecioVentaToADD, @StockToADD, @IdUsuarioToADD)";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@DescriptionToADD", productToAdd.Descripciones);
                     SqlDbQuery.Parameters.AddWithValue("@CostoToADD", productToAdd.Costo);
                     SqlDbQuery.Parameters.AddWithValue("@PrecioVentaToADD", productToAdd.PrecioVenta);
                     SqlDbQuery.Parameters.AddWithValue("@StockToADD", productToAdd.Stock);
@@ -149,7 +148,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
                 {
                     Producto original = getProductById(DataToUpdate.Id);
-                    SqlDbQuery.Parameters.AddWithValue("@descriptionToChange", DataToUpdate.Descripcion);
+                    SqlDbQuery.Parameters.AddWithValue("@descriptionToChange", DataToUpdate.Descripciones);
                     SqlDbQuery.Parameters.AddWithValue("@costoToChange", DataToUpdate.Costo);
                     SqlDbQuery.Parameters.AddWithValue("@precioVentaToChange", DataToUpdate.PrecioVenta);
                     SqlDbQuery.Parameters.AddWithValue("@stockToChange", DataToUpdate.Stock);
@@ -161,7 +160,10 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 }
             }
         }
-        public static void UpdateStockProducto(long idProducto, int StockVendido)
+        #endregion
+        #region Metodos Internos
+        //Necesarios para otros metodos
+        internal static void UpdateStockProducto(long idProducto, int StockVendido)
         {
             int AffectedRegisters;
             Producto productSelled = ProductoHandler.getProductById(idProducto);
@@ -188,7 +190,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             bool result = false;
             int AffectedRegisters;
             //Previamente se deben eliminar todos los productos vendidos del producto en cuestion.
-            List<Producto> Productos = ProductoHandler.getProductByUserId(idUsuario);
+            List<Producto> Productos = ProductoHandler.getProductsByUserId(idUsuario);
             foreach (Producto producto in Productos)
             {
                 ProductoVendidoHandler.DeleteProductoVendidoByProductID(producto.Id);
@@ -212,5 +214,6 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return result;
         }
+        #endregion
     }
 }
