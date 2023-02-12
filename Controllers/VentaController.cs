@@ -14,5 +14,10 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
         {
             VentaHandler.CrearVenta(idUsuario, DataToAdd);
         }
+        [HttpGet("{idUsuario}")]
+        public List<Venta> TraerVentas(long idUsuario)
+        {
+            return VentaHandler.GetVentaByUserId(idUsuario);
+        }
     }
 }
