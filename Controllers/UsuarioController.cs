@@ -9,10 +9,10 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
     public class UsuarioController : ControllerBase
     {
         //LogIn de Usuario.
-        [HttpGet("{userName}/{password}")]
-        public Usuario LogIn(string userName, string password)
+        [HttpGet("{usuario}/{contraseña}")]
+        public Usuario LogIn(string usuario, string contraseña)
         {
-            Usuario user = UsuarioHandler.UserLogIn(userName, password);
+            Usuario user = UsuarioHandler.UserLogIn(usuario, contraseña);
             return user;
         }
 
@@ -22,5 +22,24 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
         {
             UsuarioHandler.UpdateUsuario(DataToModify);
         }
+        [HttpPost]
+        public void CrearUsuario(Usuario usuario)
+        {
+            if (!UsuarioHandler.InsertUsuario(usuario))
+            {
+                throw new HttpRequestException("El nombre de usuario yá esta en uso. Elija Otro.");
+            }
+        }
+        [HttpGet("{usuario}")]
+        public Usuario TraerUsuario(string usuario)
+        {
+            return UsuarioHandler.GetUsuarioByUserName(usuario);
+        }
+        [HttpDelete("{id}")]
+        public void BorrarUsuario(long id)
+        {
+            UsuarioHandler.DeleteUser(id);
+        }
+
     }
 }
