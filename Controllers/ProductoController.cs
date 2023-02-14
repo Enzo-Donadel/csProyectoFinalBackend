@@ -11,19 +11,31 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
     {
         //Crea nuevoProducto
         [HttpPost]
-        public void CrearProducto(Producto DataToAdd)
+        public bool CrearProducto(Producto DataToAdd)
         {
-            ProductoHandler.AddProducto(DataToAdd);
+            if (!ProductoHandler.AddProducto(DataToAdd))
+            {
+                throw new HttpRequestException("El Producto no ha podido ser creado correctamente.");
+            }
+            else return true;
         }
         [HttpPut]
-        public void ModificarProducto(Producto DataToUpdate)
+        public bool ModificarProducto(Producto DataToUpdate)
         {
-            ProductoHandler.UpdateProducto(DataToUpdate);
+            if (!ProductoHandler.UpdateProducto(DataToUpdate))
+            {
+                throw new HttpRequestException("El Producto no ha podido ser modificado correctamente.");
+            }
+            else return true;
         }
         [HttpDelete("{id}")]
-        public void BorrarProducto(long id)
+        public bool BorrarProducto(long id)
         {
-            ProductoHandler.DeleteProduct(id);
+            if (!ProductoHandler.DeleteProduct(id))
+            {
+                throw new HttpRequestException("El Producto no ha podido ser borrado correctamente.");
+            }
+            else return true;
         }
         [HttpGet("{idUsuario}")]
         public List<Producto> TraerProductos(long idUsuario)
