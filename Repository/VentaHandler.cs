@@ -5,7 +5,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal class VentaHandler
     {
-        //Traer Ventas (recibe el id del usuario y devuelve un a lista de Ventas realizadas por ese usuario)
+        #region Metodos ProyectoFinal
         public static List<Venta> GetVentaByUserId(long userIdToSearch)
         {
             List<Venta> ventas = new List<Venta>();
@@ -36,45 +36,33 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return ventas;
         }
-        public static Usuario GetUsuarioByVenta(long VentaId)
-        {
-            long idToSearch = 0;
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
-            {
-                string query = "SELECT Venta.IdUsuario FROM Venta WHERE Id = @parameterToSearch";
-                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
-                {
-                    SqlParameter ParameterID = new SqlParameter("parameterToSearch", System.Data.SqlDbType.BigInt);
-                    ParameterID.Value = VentaId;
-                    SqlDbQuery.Parameters.Add(ParameterID);
-                    SqlDbConnection.Open();
-                    using (SqlDataReader DataReader = SqlDbQuery.ExecuteReader())
-                    {
-                        if (DataReader.HasRows)
-                        {
-                            DataReader.Read();
-                            idToSearch = DataReader.GetInt64(0);
-                        }
-                    }
-                    SqlDbConnection.Close();
-                }
-            }
-            return UsuarioHandler.GetUsuarioByID(idToSearch);
-        }
-        public static void CrearVenta(long id, List<Producto> productos)
+        public static bool CrearVenta(long id, List<Producto> productos)
         {
             long idVenta = CrearVenta(id);
+            if (idVenta == 0)
+            {
+                return false;
+            }
             foreach (Producto item in productos)
             {
                 int cantidadVendida = item.Stock;
-                ProductoVendido temp= new ProductoVendido(item.Id, item.Stock, idVenta);
-                int temporal = ProductoVendidoHandler.InsertProductoVendido(temp);
-                ProductoHandler.UpdateStockProducto(item.Id, cantidadVendida);
+                ProductoVendido temp = new ProductoVendido(item.Id, item.Stock, idVenta);
+                if (!ProductoVendidoHandler.InsertProductoVendido(temp))
+                {
+                    return false;
+                }
+                if (!ProductoHandler.UpdateStockProducto(item.Id, cantidadVendida))
+                {
+                    return false;
+                }
             }
+            return true;
         }
-        public static long CrearVenta(long idUsuario)
+        #endregion
+        #region Metodos Helper internos
+        internal static long CrearVenta(long idUsuario)
         {
-            long idNuevaVenta;
+            long idNuevaVenta = 0;
             string query = "INSERT INTO Venta " +
                                 "(Comentarios, IdUsuario) " +
                             "VALUES " +
@@ -93,5 +81,36 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return idNuevaVenta;
         }
+        //Metodo Helper necesario para el funcionamiento de "BorrarUsuario", ya que previamente se deben borrar las ventas cargados por ese Usuario.
+        internal static bool DeleteVentasByUser(long idUsuario)
+        {
+            bool result = false;
+            int AffectedRegisters;
+            //Previamente se deben eliminar todos los productos vendidos del producto en cuestion.
+            List<Venta> Ventas = VentaHandler.GetVentaByUserId(idUsuario);
+            foreach (Venta venta in Ventas)
+            {
+                ProductoVendidoHandler.DeleteProductoVendidoByVentaId(venta.Id);
+            }
+            string query = "Delete FROM Venta " +
+                            "WHERE " +
+                                "IdUsuario = @idParameter";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@idParameter", idUsuario);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    if (AffectedRegisters > 0)
+                    {
+                        result = true;
+                    }
+                    SqlDbConnection.Close();
+                }
+            }
+            return result;
+        }
+        #endregion
     }
 }

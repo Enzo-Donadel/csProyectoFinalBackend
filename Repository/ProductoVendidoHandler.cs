@@ -5,39 +5,6 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
 {
     internal class ProductoVendidoHandler
     {
-        //Traer ProductosVendidos (recibe el id del usuario y devuelve una lista de productos vendidos por ese usuario)
-        private static List<ProductoVendido> getTablaProductoVendido(long sellIdToSearch)
-        {
-            List<ProductoVendido> productosDeVentaX = new List<ProductoVendido>();
-            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
-            {
-                string query = "SELECT * FROM ProductoVendido WHERE IdVenta =@parameterToSearch";
-                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
-                {
-                    SqlParameter ParameterID = new SqlParameter("parameterToSearch", System.Data.SqlDbType.BigInt);
-                    ParameterID.Value = sellIdToSearch;
-                    SqlDbQuery.Parameters.Add(ParameterID);
-                    SqlDbConnection.Open();
-                    using (SqlDataReader DataReader = SqlDbQuery.ExecuteReader())
-                    {
-                        if (DataReader.HasRows)
-                        {
-                            while (DataReader.Read())
-                            {
-                                ProductoVendido temp = new ProductoVendido();
-                                temp.Id = DataReader.GetInt64(0);
-                                temp.Stock = Convert.ToInt32(DataReader.GetInt32(1));
-                                temp.IdProducto = DataReader.GetInt64(2);
-                                temp.IdVenta = DataReader.GetInt64(3);
-                                productosDeVentaX.Add(temp);
-                            }
-                        }
-                    }
-                    SqlDbConnection.Close();
-                }
-            }
-            return productosDeVentaX;
-        }
         public static List<Producto> getProductosInVenta(long idVenta)
         {
             List<Producto> ProductosEnVenta = new List<Producto>();
@@ -101,11 +68,56 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return result;
         }
-        public static void DeleteProductoVendido(long idToDelete)
+        #region Metodos Proyecto Final
+        public static List<ProductoVendido> GetProductoVendidoByUserName(long idUsuario)
         {
-            int AffectedRegisters;
-            //Previamente se deben eliminar todos los productos vendidos del producto en cuestion.
-
+            List<ProductoVendido> productoVendidos = new List<ProductoVendido>();
+            List<Venta> VentasDeUsuario = VentaHandler.GetVentaByUserId(idUsuario);
+            foreach (Venta venta in VentasDeUsuario)
+            {
+                List<ProductoVendido> temp = ProductoVendidoHandler.getProductoVendidoByVenta(venta.Id);
+                productoVendidos.AddRange(temp);
+            }
+            return productoVendidos;
+        }
+        #endregion
+        #region Metodos Helper internos
+        internal static List<ProductoVendido> getProductoVendidoByVenta(long sellIdToSearch)
+        {
+            List<ProductoVendido> productosDeVentaX = new List<ProductoVendido>();
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                string query = "SELECT * FROM ProductoVendido WHERE IdVenta =@parameterToSearch";
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlParameter ParameterID = new SqlParameter("parameterToSearch", System.Data.SqlDbType.BigInt);
+                    ParameterID.Value = sellIdToSearch;
+                    SqlDbQuery.Parameters.Add(ParameterID);
+                    SqlDbConnection.Open();
+                    using (SqlDataReader DataReader = SqlDbQuery.ExecuteReader())
+                    {
+                        if (DataReader.HasRows)
+                        {
+                            while (DataReader.Read())
+                            {
+                                ProductoVendido temp = new ProductoVendido();
+                                temp.Id = DataReader.GetInt64(0);
+                                temp.Stock = Convert.ToInt32(DataReader.GetInt32(1));
+                                temp.IdProducto = DataReader.GetInt64(2);
+                                temp.IdVenta = DataReader.GetInt64(3);
+                                productosDeVentaX.Add(temp);
+                            }
+                        }
+                    }
+                    SqlDbConnection.Close();
+                }
+            }
+            return productosDeVentaX;
+        }
+        internal static bool DeleteProductoVendidoByProductID(long idToDelete)
+        {
+            bool result = false;
+            //Metodo Helper necesario para el funcionamiento de "BorrarProductoByUser", ya que previamente se deben borrar los productosVendidos de dicho producto.
             string query = "Delete FROM ProductoVendido " +
                             "WHERE " +
                                 "IdProducto = @idParameter";
@@ -113,17 +125,18 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             {
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
                 {
-                    SqlDbQuery.Parameters.AddWithValue("@IdParameter", idToDelete);
+                    SqlDbQuery.Parameters.AddWithValue("@idParameter", idToDelete);
                     SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    int affectedRows =SqlDbQuery.ExecuteNonQuery() ;
                     SqlDbConnection.Close();
+                    result = true;
                 }
             }
+            return result;
         }
-        public static int InsertProductoVendido(ProductoVendido productToAdd)
+        internal static bool InsertProductoVendido(ProductoVendido productToAdd)
         {
-            int result = 0;
-            int AffectedRegisters;
+            bool result = false;
             string query = "INSERT INTO ProductoVendido " +
                                 "(Stock,IdProducto, IdVenta) " +
                             "VALUES " +
@@ -137,11 +150,33 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                     SqlDbQuery.Parameters.AddWithValue("@idProductoToADD", productToAdd.IdProducto);
                     SqlDbQuery.Parameters.AddWithValue("@idVentaToADD", productToAdd.IdVenta);
                     SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    if (SqlDbQuery.ExecuteNonQuery() == 1)
+                    {
+                        result = true;
+                    }
                     SqlDbConnection.Close();
                 }
             }
             return result;
         }
+        //Metodo Helper necesario para el funcionamiento de "BorrarVentaByUser", ya que previamente se deben borrar los productosVendidos en dicha venta.
+        internal static void DeleteProductoVendidoByVentaId(long idToDelete)
+        {
+            int AffectedRegisters;
+            string query = "Delete FROM ProductoVendido " +
+                            "WHERE " +
+                                "IdVenta = @idParameter";
+            using (SqlConnection SqlDbConnection = new SqlConnection(Constants.connectionString))
+            {
+                using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
+                {
+                    SqlDbQuery.Parameters.AddWithValue("@idParameter", idToDelete);
+                    SqlDbConnection.Open();
+                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    SqlDbConnection.Close();
+                }
+            }
+        }
+        #endregion
     }
 }
