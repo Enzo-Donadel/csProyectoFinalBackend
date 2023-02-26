@@ -36,22 +36,33 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return ventas;
         }
-        public static void CrearVenta(long id, List<Producto> productos)
+        public static bool CrearVenta(long id, List<Producto> productos)
         {
             long idVenta = CrearVenta(id);
+            if (idVenta == 0)
+            {
+                return false;
+            }
             foreach (Producto item in productos)
             {
                 int cantidadVendida = item.Stock;
                 ProductoVendido temp = new ProductoVendido(item.Id, item.Stock, idVenta);
-                int temporal = ProductoVendidoHandler.InsertProductoVendido(temp);
-                ProductoHandler.UpdateStockProducto(item.Id, cantidadVendida);
+                if (!ProductoVendidoHandler.InsertProductoVendido(temp))
+                {
+                    return false;
+                }
+                if (!ProductoHandler.UpdateStockProducto(item.Id, cantidadVendida))
+                {
+                    return false;
+                }
             }
+            return true;
         }
         #endregion
         #region Metodos Helper internos
         internal static long CrearVenta(long idUsuario)
         {
-            long idNuevaVenta;
+            long idNuevaVenta = 0;
             string query = "INSERT INTO Venta " +
                                 "(Comentarios, IdUsuario) " +
                             "VALUES " +

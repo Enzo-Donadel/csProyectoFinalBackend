@@ -73,7 +73,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
         {
             List<ProductoVendido> productoVendidos = new List<ProductoVendido>();
             List<Venta> VentasDeUsuario = VentaHandler.GetVentaByUserId(idUsuario);
-            foreach(Venta venta in VentasDeUsuario)
+            foreach (Venta venta in VentasDeUsuario)
             {
                 List<ProductoVendido> temp = ProductoVendidoHandler.getProductoVendidoByVenta(venta.Id);
                 productoVendidos.AddRange(temp);
@@ -114,9 +114,9 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return productosDeVentaX;
         }
-        internal static void DeleteProductoVendidoByProductID(long idToDelete)
+        internal static bool DeleteProductoVendidoByProductID(long idToDelete)
         {
-            int AffectedRegisters;
+            bool result = false;
             //Metodo Helper necesario para el funcionamiento de "BorrarProductoByUser", ya que previamente se deben borrar los productosVendidos de dicho producto.
             string query = "Delete FROM ProductoVendido " +
                             "WHERE " +
@@ -127,15 +127,16 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 {
                     SqlDbQuery.Parameters.AddWithValue("@idParameter", idToDelete);
                     SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    int affectedRows =SqlDbQuery.ExecuteNonQuery() ;
                     SqlDbConnection.Close();
+                    result = true;
                 }
             }
+            return result;
         }
-        internal static int InsertProductoVendido(ProductoVendido productToAdd)
+        internal static bool InsertProductoVendido(ProductoVendido productToAdd)
         {
-            int result = 0;
-            int AffectedRegisters;
+            bool result = false;
             string query = "INSERT INTO ProductoVendido " +
                                 "(Stock,IdProducto, IdVenta) " +
                             "VALUES " +
@@ -149,7 +150,10 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                     SqlDbQuery.Parameters.AddWithValue("@idProductoToADD", productToAdd.IdProducto);
                     SqlDbQuery.Parameters.AddWithValue("@idVentaToADD", productToAdd.IdVenta);
                     SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    if (SqlDbQuery.ExecuteNonQuery() == 1)
+                    {
+                        result = true;
+                    }
                     SqlDbConnection.Close();
                 }
             }

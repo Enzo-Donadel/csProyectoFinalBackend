@@ -15,20 +15,23 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
             Usuario user = UsuarioHandler.UserLogIn(usuario, contraseña);
             return user;
         }
-
-        //Modifica Datos de Usuario
         [HttpPut]
-        public void ModificarUsuario(Usuario DataToModify)
+        public bool ModificarUsuario(Usuario DataToModify)
         {
-            UsuarioHandler.UpdateUsuario(DataToModify);
+            if (!UsuarioHandler.UpdateUsuario(DataToModify))
+            {
+                throw new HttpRequestException("El Usuario no ha podido ser modificado correctamente.");
+            }
+            else return true;
         }
         [HttpPost]
-        public void CrearUsuario(Usuario usuario)
+        public bool CrearUsuario(Usuario usuario)
         {
             if (!UsuarioHandler.InsertUsuario(usuario))
             {
                 throw new HttpRequestException("El nombre de usuario yá esta en uso. Elija Otro.");
             }
+            else return true;
         }
         [HttpGet("{usuario}")]
         public Usuario TraerUsuario(string usuario)
@@ -36,9 +39,13 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
             return UsuarioHandler.GetUsuarioByUserName(usuario);
         }
         [HttpDelete("{id}")]
-        public void BorrarUsuario(long id)
+        public bool BorrarUsuario(long id)
         {
-            UsuarioHandler.DeleteUser(id);
+            if (!UsuarioHandler.DeleteUser(id))
+            {
+                throw new HttpRequestException("El Usuario no ha podido ser borrado correctamente.");
+            }
+            else return true;
         }
 
     }

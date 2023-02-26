@@ -91,9 +91,9 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             }
             return products;
         }
-        public static void AddProducto(Producto productToAdd)
+        public static bool AddProducto(Producto productToAdd)
         {
-            int AffectedRegisters;
+            bool result = false;
             string query = "INSERT INTO Producto " +
                                 "(Descripciones, Costo, PrecioVenta, Stock, IdUsuario) " +
                             "VALUES " +
@@ -108,16 +108,23 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                     SqlDbQuery.Parameters.AddWithValue("@StockToADD", productToAdd.Stock);
                     SqlDbQuery.Parameters.AddWithValue("@IdUsuarioToADD", productToAdd.IdUsuario);
                     SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    if (SqlDbQuery.ExecuteNonQuery() == 1)
+                    {
+                        result = true;
+                    }
                     SqlDbConnection.Close();
                 }
             }
+            return result;
         }
-        public static void DeleteProduct(long idToDelete)
+        public static bool DeleteProduct(long idToDelete)
         {
-            int AffectedRegisters;
+            bool result = false;
             //Previamente se deben eliminar todos los productos vendidos del producto en cuestion.
-
+            if (!ProductoVendidoHandler.DeleteProductoVendidoByProductID(idToDelete))
+            {
+                return false;
+            }
             string query = "Delete FROM Producto " +
                             "WHERE " +
                                 "Id = @idParameter";
@@ -127,14 +134,16 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 {
                     SqlDbQuery.Parameters.AddWithValue("@idParameter", idToDelete);
                     SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    SqlDbQuery.ExecuteNonQuery();
                     SqlDbConnection.Close();
+                    result = true;
                 }
             }
+            return result;
         }
-        public static void UpdateProducto(Producto DataToUpdate)
+        public static bool UpdateProducto(Producto DataToUpdate)
         {
-            int AffectedRegisters;
+            bool result = false;
             string query = "UPDATE Producto " +
                             "SET " +
                                 "Descripciones = @descriptionToChange, " +
@@ -155,17 +164,21 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                     SqlDbQuery.Parameters.AddWithValue("@idUsuarioToChange", DataToUpdate.IdUsuario);
                     SqlDbQuery.Parameters.AddWithValue("@ProductId", DataToUpdate.Id);
                     SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    if (SqlDbQuery.ExecuteNonQuery() == 1)
+                    {
+                        result = true;
+                    }
                     SqlDbConnection.Close();
                 }
             }
+            return result;
         }
         #endregion
         #region Metodos Internos
         //Necesarios para otros metodos
-        internal static void UpdateStockProducto(long idProducto, int StockVendido)
+        internal static bool UpdateStockProducto(long idProducto, int StockVendido)
         {
-            int AffectedRegisters;
+            bool result = false;
             Producto productSelled = ProductoHandler.getProductById(idProducto);
             productSelled.Stock -= StockVendido;
             string query = "UPDATE Producto " +
@@ -179,10 +192,14 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                     SqlDbQuery.Parameters.AddWithValue("@stockToChange", productSelled.Stock);
                     SqlDbQuery.Parameters.AddWithValue("@ProductId", productSelled.Id);
                     SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    if (SqlDbQuery.ExecuteNonQuery() == 1)
+                    {
+                        result = true;
+                    }
                     SqlDbConnection.Close();
                 }
             }
+            return result;
         }
         //Metodo Helper necesario para el funcionamiento de "BorrarUsuario", ya que previamente se deben borrar los productos cargados por ese Usuario.
         internal static bool DeleteProductsByUser(long idUsuario)

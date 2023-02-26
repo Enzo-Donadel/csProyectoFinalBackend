@@ -108,9 +108,9 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
             return user;
         }
         //Update de Usuario. Si cualquier valor es "Null" o "vacio", en caso de strings, no lo modifica.
-        public static void UpdateUsuario(Usuario DataToUpdate)
+        public static bool UpdateUsuario(Usuario DataToUpdate)
         {
-            int AffectedRegisters;
+            bool result = false;
             string query = "UPDATE Usuario " +
                 "SET " +
                 "Nombre = @nameToChange, " +
@@ -124,37 +124,41 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 using (SqlCommand SqlDbQuery = new SqlCommand(query, SqlDbConnection))
                 {
                     Usuario original = GetUsuarioByID(DataToUpdate.Id);
-                    if (DataToUpdate.Nombre != null)
+                    if (DataToUpdate.Nombre != original.Nombre)
                     {
                         SqlDbQuery.Parameters.AddWithValue("@nameToChange", DataToUpdate.Nombre);
                     }
                     else SqlDbQuery.Parameters.AddWithValue("nametoChange", original.Nombre);
-                    if (DataToUpdate.Apellido != null)
+                    if (DataToUpdate.Apellido != original.Apellido)
                     {
                         SqlDbQuery.Parameters.AddWithValue("@lastNameToChange", DataToUpdate.Apellido);
                     }
                     else SqlDbQuery.Parameters.AddWithValue("@lastNameToChange", original.Apellido);
-                    if (DataToUpdate.NombreUsuario != null)
+                    if (DataToUpdate.NombreUsuario != original.NombreUsuario)
                     {
                         SqlDbQuery.Parameters.AddWithValue("@userNameToChange", DataToUpdate.NombreUsuario);
                     }
                     else SqlDbQuery.Parameters.AddWithValue("@userNameToChange", original.NombreUsuario);
-                    if (DataToUpdate.Contraseña != null)
+                    if (DataToUpdate.Contraseña != original.Contraseña)
                     {
                         SqlDbQuery.Parameters.AddWithValue("@passwordToChange", DataToUpdate.Contraseña);
                     }
                     else SqlDbQuery.Parameters.AddWithValue("@passwordToChange", original.Contraseña);
-                    if (DataToUpdate.Contraseña != null)
+                    if (DataToUpdate.Mail != original.Mail)
                     {
                         SqlDbQuery.Parameters.AddWithValue("@mailToChange", DataToUpdate.Mail);
                     }
                     else SqlDbQuery.Parameters.AddWithValue("@mailToChange", original.Mail);
                     SqlDbQuery.Parameters.AddWithValue("@userId", DataToUpdate.Id);
                     SqlDbConnection.Open();
-                    AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
+                    if (SqlDbQuery.ExecuteNonQuery() == 1)
+                    {
+                        result = true;
+                    }
                     SqlDbConnection.Close();
                 }
             }
+            return result;
         }
         //Trae un Usuario mediante su NombreUsuario.
         public static Usuario GetUsuarioByUserName(string userName)
@@ -231,9 +235,9 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                     SqlDbQuery.Parameters.AddWithValue("@IdParameter", idToDelete);
                     SqlDbConnection.Open();
                     AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
-                    if(AffectedRegisters == 1)
+                    if (AffectedRegisters == 1)
                     {
-                        result= true;
+                        result = true;
                     }
                     SqlDbConnection.Close();
                 }

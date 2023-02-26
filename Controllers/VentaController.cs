@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SistemaGestionWebApi_EnzoDonadel.Models;
 using SistemaGestionWebApi_EnzoDonadel.Repository;
 
@@ -10,9 +9,13 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
     public class VentaController : ControllerBase
     {
         [HttpPost("{idUsuario}")]
-        public void CrearVenta(long idUsuario, List<Producto> DataToAdd)
+        public bool CrearVenta(long idUsuario, List<Producto> DataToAdd)
         {
-            VentaHandler.CrearVenta(idUsuario, DataToAdd);
+            if (!VentaHandler.CrearVenta(idUsuario, DataToAdd))
+            {
+                throw new HttpRequestException("La Venta no se a realizado correctamente.");
+            }
+            else return true;
         }
         [HttpGet("{idUsuario}")]
         public List<Venta> TraerVentas(long idUsuario)
