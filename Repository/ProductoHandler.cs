@@ -134,11 +134,9 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 {
                     SqlDbQuery.Parameters.AddWithValue("@idParameter", idToDelete);
                     SqlDbConnection.Open();
-                    if (SqlDbQuery.ExecuteNonQuery() == 1)
-                    {
-                        result = true;
-                    }
+                    SqlDbQuery.ExecuteNonQuery();
                     SqlDbConnection.Close();
+                    result = true;
                 }
             }
             return result;
@@ -194,7 +192,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                     SqlDbQuery.Parameters.AddWithValue("@stockToChange", productSelled.Stock);
                     SqlDbQuery.Parameters.AddWithValue("@ProductId", productSelled.Id);
                     SqlDbConnection.Open();
-                    if(SqlDbQuery.ExecuteNonQuery() ==1)
+                    if (SqlDbQuery.ExecuteNonQuery() == 1)
                     {
                         result = true;
                     }

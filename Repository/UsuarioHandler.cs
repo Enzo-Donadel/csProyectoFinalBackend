@@ -235,9 +235,9 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                     SqlDbQuery.Parameters.AddWithValue("@IdParameter", idToDelete);
                     SqlDbConnection.Open();
                     AffectedRegisters = SqlDbQuery.ExecuteNonQuery();
-                    if(AffectedRegisters == 1)
+                    if (AffectedRegisters == 1)
                     {
-                        result= true;
+                        result = true;
                     }
                     SqlDbConnection.Close();
                 }

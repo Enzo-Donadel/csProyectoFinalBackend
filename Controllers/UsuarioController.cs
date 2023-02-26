@@ -15,8 +15,6 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
             Usuario user = UsuarioHandler.UserLogIn(usuario, contraseña);
             return user;
         }
-
-        //Modifica Datos de Usuario, regresa un valor verdadero en caso de haber afectado correctamente la base de datos.
         [HttpPut]
         public bool ModificarUsuario(Usuario DataToModify)
         {
@@ -43,7 +41,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Controllers
         [HttpDelete("{id}")]
         public bool BorrarUsuario(long id)
         {
-            if(!UsuarioHandler.DeleteUser(id))
+            if (!UsuarioHandler.DeleteUser(id))
             {
                 throw new HttpRequestException("El Usuario no ha podido ser borrado correctamente.");
             }

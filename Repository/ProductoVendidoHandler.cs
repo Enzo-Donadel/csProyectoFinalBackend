@@ -73,7 +73,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
         {
             List<ProductoVendido> productoVendidos = new List<ProductoVendido>();
             List<Venta> VentasDeUsuario = VentaHandler.GetVentaByUserId(idUsuario);
-            foreach(Venta venta in VentasDeUsuario)
+            foreach (Venta venta in VentasDeUsuario)
             {
                 List<ProductoVendido> temp = ProductoVendidoHandler.getProductoVendidoByVenta(venta.Id);
                 productoVendidos.AddRange(temp);
@@ -127,11 +127,9 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 {
                     SqlDbQuery.Parameters.AddWithValue("@idParameter", idToDelete);
                     SqlDbConnection.Open();
-                    if(SqlDbQuery.ExecuteNonQuery() ==  1)
-                    {
-                        result = true;
-                    }
+                    int affectedRows =SqlDbQuery.ExecuteNonQuery() ;
                     SqlDbConnection.Close();
+                    result = true;
                 }
             }
             return result;
@@ -152,9 +150,9 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                     SqlDbQuery.Parameters.AddWithValue("@idProductoToADD", productToAdd.IdProducto);
                     SqlDbQuery.Parameters.AddWithValue("@idVentaToADD", productToAdd.IdVenta);
                     SqlDbConnection.Open();
-                    if(SqlDbQuery.ExecuteNonQuery() == 1)
+                    if (SqlDbQuery.ExecuteNonQuery() == 1)
                     {
-                        result= true;
+                        result = true;
                     }
                     SqlDbConnection.Close();
                 }

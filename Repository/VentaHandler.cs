@@ -51,7 +51,7 @@ namespace SistemaGestionWebApi_EnzoDonadel.Repository
                 {
                     return false;
                 }
-                if(!ProductoHandler.UpdateStockProducto(item.Id, cantidadVendida))
+                if (!ProductoHandler.UpdateStockProducto(item.Id, cantidadVendida))
                 {
                     return false;
                 }
